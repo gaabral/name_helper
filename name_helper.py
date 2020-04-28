@@ -1,19 +1,13 @@
 import os
 import pandas
 import csv
+import os.path
+from os import path
 
 
 def read_file_into_dict(csv_file):
     name_score_dict = pandas.read_csv(csv_file, header=None, index_col=0, squeeze=True).to_dict()
     return name_score_dict
-
-
-def is_float(value):
-    try:
-        float(value)
-        return True
-    except ValueError:
-        return False
 
 
 def get_all_csvs_from_location(location):
@@ -27,22 +21,19 @@ def get_all_csvs_from_location(location):
 
 def merge_csvs(arr_dicts):
     merged_with_sum = dict()
-    header = dict()
     for d in arr_dicts:
         for key, val in d.items():
-            if not (is_float(val)):
-                header = (key, val)
-            elif merged_with_sum.get(key, "def") == "def":
+            if merged_with_sum.get(key) is None:
                 merged_with_sum.update({key: float(val)})
             else:
                 merged_with_sum.update({key: float(merged_with_sum.get(key)) + float(val)})
-    return (merged_with_sum, header)
+    return merged_with_sum
 
 
-def write_result_to_file(header, result, name):
-    with open(name+ ".csv", 'w', newline="") as generated_csv_file:
+def write_result_to_file(result, name):
+    with open(name + ".csv", 'w', newline="") as generated_csv_file:
         writer = csv.writer(generated_csv_file)
-        writer.writerow([header[0], header[1]])
+        writer.writerow(["Name", "score"])
         for item in result:
             writer.writerow([item[0], item[1]])
 
@@ -59,33 +50,23 @@ def divide_by_gender(full_rank):
             female_list.append(item)
         else:
             male_list.append(item)
-    return {"female": female_list, "male": male_list}
-
-
-def get_top_N(full_rank, n):
-    return full_rank[:n]
-
-
-
-def write_result_to_file_with_comparison(header, result, name):
-    with open(name + ".csv", 'w', newline="") as generated_csv_file:
-        writer = csv.writer(generated_csv_file)
-        writer.writerow([header[0], header[1], header[2], header[3]])
-        for item in result:
-            writer.writerow([item[0], item[1]])
+    return (female_list, male_list)
 
 
 location = input("Please specify path, or leave empty for current folder: ")
-validated_location = location if location else os.getcwd()
+if path.exists(location):
+    validated_location = location
+else:
+    print("Provided path does not exist, path: " + location)
+    print("Using current folder instead")
+    validated_location = os.getcwd()
+print("Generating result files.........")
 arr_dicts = get_all_csvs_from_location(validated_location)
-header = merge_csvs(arr_dicts)[1]
-merged_csv = merge_csvs(arr_dicts)[0]
+merged_csv = merge_csvs(arr_dicts)
 sorted_result = sort(merged_csv)
-full_female_rank = divide_by_gender(sorted_result).get("female")
-full_male_rank = divide_by_gender(sorted_result).get("male")
-top_ten_female = get_top_N(full_female_rank, 10)
-top_ten_male = get_top_N(full_male_rank, 10)
-write_result_to_file(header, full_female_rank, "full_female_rank")
-write_result_to_file(header, full_male_rank, "full_male_rank")
-write_result_to_file(header, top_ten_female, "top_ten_female")
-write_result_to_file(header, top_ten_male, "top_ten_male")
+(full_female_rank, full_male_rank) = divide_by_gender(sorted_result)
+write_result_to_file(full_female_rank, "full_female_rank")
+write_result_to_file(full_male_rank, "full_male_rank")
+write_result_to_file(full_female_rank[:10], "top_ten_female")
+write_result_to_file(full_male_rank[:10], "top_ten_male")
+print("Full_rank and top_10 files generated")
