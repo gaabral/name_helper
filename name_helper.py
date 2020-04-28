@@ -1,8 +1,6 @@
 import os
 import pandas
 import csv
-import os.path
-from os import path
 
 
 def read_file_into_dict(csv_file):
@@ -54,7 +52,7 @@ def divide_by_gender(full_rank):
 
 
 location = input("Please specify path, or leave empty for current folder: ")
-if path.exists(location):
+if os.path.exists(location):
     validated_location = location
 else:
     print("Provided path does not exist, path: " + location)
