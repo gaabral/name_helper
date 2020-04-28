@@ -20,10 +20,8 @@ def get_all_csvs_from_location(location):
     arr_dicts = []
     for file in os.listdir(location):
         if file.endswith(".csv"):
-            print("csv file found: ", file)
             file_dict = read_file_into_dict(file)
             arr_dicts.append(file_dict)
-    print(len(arr_dicts))
     return arr_dicts
 
 
@@ -61,8 +59,6 @@ def divide_by_gender(full_rank):
             female_list.append(item)
         else:
             male_list.append(item)
-    print(female_list)
-    print(male_list)
     return {"female": female_list, "male": male_list}
 
 
